@@ -33,20 +33,30 @@ interface AddCommentToThreadParams {
     path: string;
 }
 
+interface FetchUserThreadsParams {
+    userId: string;
+    page?: number;
+    limit?: number;
+}
 
-function toPlainObject(doc: any): any {
-    const obj = doc.toObject ? doc.toObject() : doc;
+
+
+function toPlainObject<T>(doc: T): Record<string, unknown> {
+    const obj: Record<string, unknown> = doc instanceof mongoose.Document ? doc.toObject() : doc as Record<string, unknown>;
     Object.keys(obj).forEach(key => {
         if (obj[key] instanceof mongoose.Types.ObjectId) {
             obj[key] = obj[key].toString();
         } else if (Array.isArray(obj[key])) {
-            obj[key] = obj[key].map(toPlainObject);
-        } else if (obj[key] instanceof Object) {
-            obj[key] = toPlainObject(obj[key]);
+            obj[key] = (obj[key] as unknown[]).map(item => toPlainObject(item));
+        } else if (obj[key] instanceof Object && !(obj[key] instanceof Date)) {
+            obj[key] = toPlainObject(obj[key] as Record<string, unknown>);
         }
     });
     return obj;
 }
+
+
+
 
 export async function createThread({ text, author, communityId, path }: Params) {
 
@@ -205,5 +215,68 @@ export async function addCommentToThread({
     } catch (error) {
         console.error('Error adding comment to thread:', error);
         throw error;
+    }
+}
+
+
+export async function fetchUserThreads({
+                                           userId,
+                                           page = 1,
+                                           limit = 10
+                                       }: FetchUserThreadsParams): Promise<{
+    threads: any[];
+    totalPages: number;
+    currentPage: number;
+}> {
+    try {
+        await connectToDb();
+
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            throw new Error('Invalid user ID');
+        }
+
+        const skip = (page - 1) * limit;
+
+        const userObjectId = new mongoose.Types.ObjectId(userId);
+
+        const threadsQuery = Thread.find({ author: userObjectId })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate({
+                path: 'author',
+                model: UserModel,
+                select: '_id username name image'
+            })
+            .populate({
+                path: 'children',
+                populate: {
+                    path: 'author',
+                    model: UserModel,
+                    select: '_id name username parentId image'
+                }
+            });
+
+        const totalThreadsQuery = Thread.countDocuments({ author: userObjectId });
+
+
+        const [threads, totalThreads] = await Promise.all([
+            threadsQuery.exec(),
+            totalThreadsQuery.exec()
+        ]);
+
+        const totalPages = Math.ceil(totalThreads / limit);
+
+
+        const simplifiedThreads = threads.map(thread => toPlainObject(thread));
+
+        return {
+            threads: simplifiedThreads,
+            totalPages,
+            currentPage: page,
+        };
+    } catch (error) {
+        console.error('Error fetching user threads:', error);
+        throw new Error('Failed to fetch user threads');
     }
 }
