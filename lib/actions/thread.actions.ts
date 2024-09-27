@@ -14,10 +14,6 @@ interface Params {
 }
 
 interface FetchThreadsParams {
-    text: string;
-    author: string;
-    communityId: string | null;
-    path: string;
     page: number;
     limit: number;
 }
