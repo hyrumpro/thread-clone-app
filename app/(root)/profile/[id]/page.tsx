@@ -11,7 +11,6 @@ export default async function ProfilePage({ params }: { params: { id: string } }
 
     try {
         const userInfo = await getUserByCustomId(params.id);
-        if (!userInfo?.onboarded) redirect("/onboarding");
 
         const { threads } = await fetchUserThreads({ userId: params.id });
 

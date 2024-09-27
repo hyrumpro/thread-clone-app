@@ -4,10 +4,29 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { fetchAllThreads } from "@/lib/actions/thread.actions";
 import ThreadCard from '@/components/cards/ThreadCard';
 
+interface Thread {
+    _id: string;
+    parentId: string | null;
+    text: string;
+    author: {
+        _id: string;
+        name: string;
+        username: string;
+        image: string;
+    };
+    community: {
+        id: string;
+        name: string;
+        image: string;
+    } | null;
+    createdAt: string;
+    children: Thread[];
+}
+
 
 
 const InfiniteScrollComponent: React.FC = () => {
-    const [threads, setThreads] = useState([]);
+    const [threads, setThreads] = useState<Thread[]>([])
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [loading, setLoading] = useState(false);
