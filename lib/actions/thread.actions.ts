@@ -6,6 +6,18 @@ import UserModel from "@/lib/models/user.model";
 import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
 
+
+interface IUser {
+    id: string;
+    username: string;
+    name: string;
+    bio?: string;
+    image?: string;
+    onboarded: boolean;
+    path: string;
+}
+
+
 interface Params {
     text: string;
     author: string;
@@ -37,23 +49,9 @@ interface FetchUserThreadsParams {
 }
 
 
-
-
-
-function toPlainObject<T>(doc: T): Record<string, unknown> {
-    const obj: Record<string, unknown> = doc instanceof mongoose.Document ? doc.toObject() : doc as Record<string, unknown>;
-    Object.keys(obj).forEach(key => {
-        if (obj[key] instanceof mongoose.Types.ObjectId) {
-            obj[key] = obj[key].toString();
-        } else if (Array.isArray(obj[key])) {
-            obj[key] = (obj[key] as unknown[]).map(item => toPlainObject(item));
-        } else if (obj[key] instanceof Object && !(obj[key] instanceof Date)) {
-            obj[key] = toPlainObject(obj[key] as Record<string, unknown>);
-        }
-    });
-    return obj;
+function toPlainObject<T>(doc: T): T {
+    return JSON.parse(JSON.stringify(doc));
 }
-
 
 
 
@@ -110,7 +108,7 @@ export async function fetchAllThreads({ page = 1, limit = 10 }: FetchThreadsPara
         const totalThreads = await Thread.countDocuments({ parentId: { $in: [null, undefined] } });
         const totalPages = Math.ceil(totalThreads / limit);
 
-        // Convert threads to plain objects
+
         const simplifiedThreads = threads.map(toPlainObject);
 
         return {
@@ -124,9 +122,16 @@ export async function fetchAllThreads({ page = 1, limit = 10 }: FetchThreadsPara
     }
 }
 
+
+
 export async function fetchThreadById({ threadId }: FetchThreadByIdParams) {
     try {
+
         await connectToDb();
+
+        if (!mongoose.Types.ObjectId.isValid(threadId)) {
+            throw new Error('Invalid thread ID format');
+        }
 
         const thread = await Thread.findById(threadId)
             .populate({

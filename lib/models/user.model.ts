@@ -1,17 +1,7 @@
-import mongoose, { Document, Schema, Types } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
-interface IUser extends Document {
-    id: string;
-    username: string;
-    name: string;
-    image?: string;
-    bio?: string;
-    threads: Types.ObjectId[];
-    onboarded: boolean;
-    communities: Types.ObjectId[];
-}
 
-const UserSchema: Schema = new Schema<IUser>({
+const UserSchema: Schema = new Schema({
     id: {
       type: String,
       required: true,
@@ -50,7 +40,7 @@ const UserSchema: Schema = new Schema<IUser>({
 });
 
 
-const UserModel = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+const UserModel = mongoose.models.User || mongoose.model('User', UserSchema);
 
 
 export default UserModel;

@@ -7,24 +7,21 @@ import { getUserByCustomId } from "@/lib/actions/user.actions";
 
 interface Author {
     _id: string;
-    username: string;
-    image: string;
-}
-
-interface Community {
-    _id: string;
+    id?: string;
     name: string;
     image: string;
+    username: string;
 }
 
 interface Thread {
     _id: string;
-    parentId: string | null;
     text: string;
     author: Author;
-    community: Community | null;
-    createdAt: string;
+    community: null | any;
     children: Thread[];
+    createdAt: string;
+    parentId?: string | null;  // Changed to allow null
+    __v: number;
 }
 
 export default async function ThreadPage({ params }: { params: { id: string } }) {
@@ -32,10 +29,11 @@ export default async function ThreadPage({ params }: { params: { id: string } })
     if (!user) redirect("/sign-in");
 
     const userInfo = await getUserByCustomId(user.id);
-    if (!userInfo) redirect("/onboarding");
 
-    const thread = await fetchThreadById(params.id) as Thread | null;
-    if (!thread) redirect("/");
+    const threadData = await fetchThreadById({ threadId: params.id });
+    if (!threadData) redirect("/");
+
+    const thread = threadData as unknown as Thread;
 
     return (
         <div className="flex flex-col p-8 w-full">
@@ -43,38 +41,37 @@ export default async function ThreadPage({ params }: { params: { id: string } })
                 key={thread._id}
                 id={thread._id}
                 currentUserId={user.id}
-                parentId={thread.parentId}
+                parentId={thread.parentId || null}
                 content={thread.text}
                 author={thread.author}
                 community={thread.community}
                 createdAt={thread.createdAt}
                 comments={thread.children}
-                isComment={false}
             />
 
             <div className="mt-7 w-full max-w-3xl">
                 <Comment
                     threadId={thread._id}
                     currentUserImg={userInfo.image}
-                    currentUserId={userInfo._id.toString()}
+                    currentUserId={JSON.stringify(userInfo._id)}
                 />
             </div>
 
-            {thread.children.length > 0 && (
+            {thread.children && thread.children.length > 0 && (
                 <div className="w-full max-w-3xl mt-10">
                     <h2 className="text-xl font-semibold text-light-1 mb-4">Replies</h2>
-                    {thread.children.map((childThread) => (
+                    {thread.children.map((childThread: Thread) => (
                         <ThreadCard
                             key={childThread._id}
                             id={childThread._id}
                             currentUserId={user.id}
-                            parentId={childThread.parentId}
+                            parentId={childThread.parentId || null}
                             content={childThread.text}
                             author={childThread.author}
                             community={childThread.community}
                             createdAt={childThread.createdAt}
                             comments={childThread.children}
-                            isComment={true}
+                            isComment
                         />
                     ))}
                 </div>

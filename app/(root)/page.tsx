@@ -45,15 +45,16 @@ const InfiniteScrollComponent: React.FC = () => {
 
         setLoading(true);
         try {
-            const response: FetchResponse = await fetchAllThreads({ page, limit: 10 });
+            const response = await fetchAllThreads({ page, limit: 10 });
+            const typedResponse = response as unknown as FetchResponse; // Type assertion
             setThreads(prevThreads => {
                 const existingIds = new Set(prevThreads.map(thread => thread._id));
-                const uniqueNewThreads = response.threads.filter(
+                const uniqueNewThreads = typedResponse.threads.filter(
                     (thread: Thread) => !existingIds.has(thread._id)
                 );
                 return [...prevThreads, ...uniqueNewThreads];
             });
-            setTotalPages(response.totalPages);
+            setTotalPages(typedResponse.totalPages);
             setPage(prevPage => prevPage + 1);
         } catch (error) {
             console.error("Error loading threads:", error);

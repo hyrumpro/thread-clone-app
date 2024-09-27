@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { usePathname, useRouter } from 'next/navigation';
 import { createThread } from "@/lib/actions/thread.actions";
 
-// Define the schema for thread creation
+
 const ThreadSchema = z.object({
     content: z.string().min(10, "Content must be at least 10 characters long").max(1000, "Content must be less than 1000 characters"),
     accountId: z.string()
