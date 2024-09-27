@@ -5,6 +5,25 @@ import Comment from "@/components/forms/Comment";
 import ThreadCard from "@/components/cards/ThreadCard";
 import {getUserByCustomId} from "@/lib/actions/user.actions";
 
+interface Thread {
+    _id: string;
+    parentId: string | null;
+    text: string;
+    author: {
+        _id: string;
+        name: string;
+        username: string;
+        image: string;
+    };
+    community: {
+        id: string;
+        name: string;
+        image: string;
+    } | null;
+    createdAt: string;
+    children: Thread[];
+}
+
 export default async function ThreadPage({ params }: { params: { id: string } }) {
     const user = await currentUser();
     if (!user) redirect("/sign-in");
@@ -39,7 +58,7 @@ export default async function ThreadPage({ params }: { params: { id: string } })
             {thread.children && thread.children.length > 0 && (
                 <div className="w-full max-w-3xl mt-10">
                     <h2 className="text-xl font-semibold text-light-1 mb-4">Replies</h2>
-                    {thread.children.map((childThread: any) => (
+                    {thread.children.map((childThread: Thread) => (
                         <ThreadCard
                             key={childThread._id}
                             id={childThread._id}

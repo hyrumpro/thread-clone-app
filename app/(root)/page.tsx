@@ -4,6 +4,8 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { fetchAllThreads } from "@/lib/actions/thread.actions";
 import ThreadCard from '@/components/cards/ThreadCard';
 
+
+
 const InfiniteScrollComponent: React.FC = () => {
     const [threads, setThreads] = useState([]);
     const [page, setPage] = useState(1);
