@@ -3,23 +3,26 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Comment from "@/components/forms/Comment";
 import ThreadCard from "@/components/cards/ThreadCard";
-import {getUserByCustomId} from "@/lib/actions/user.actions";
+import { getUserByCustomId } from "@/lib/actions/user.actions";
+
+interface Author {
+    _id: string;
+    username: string;
+    image: string;
+}
+
+interface Community {
+    _id: string;
+    name: string;
+    image: string;
+}
 
 interface Thread {
     _id: string;
     parentId: string | null;
     text: string;
-    author: {
-        _id: string;
-        name: string;
-        username: string;
-        image: string;
-    };
-    community: {
-        id: string;
-        name: string;
-        image: string;
-    } | null;
+    author: Author;
+    community: Community | null;
     createdAt: string;
     children: Thread[];
 }
@@ -29,8 +32,9 @@ export default async function ThreadPage({ params }: { params: { id: string } })
     if (!user) redirect("/sign-in");
 
     const userInfo = await getUserByCustomId(user.id);
+    if (!userInfo) redirect("/onboarding");
 
-    const thread = await fetchThreadById({ threadId: params.id });
+    const thread = await fetchThreadById(params.id) as Thread | null;
     if (!thread) redirect("/");
 
     return (
@@ -45,20 +49,21 @@ export default async function ThreadPage({ params }: { params: { id: string } })
                 community={thread.community}
                 createdAt={thread.createdAt}
                 comments={thread.children}
+                isComment={false}
             />
 
             <div className="mt-7 w-full max-w-3xl">
                 <Comment
                     threadId={thread._id}
                     currentUserImg={userInfo.image}
-                    currentUserId={JSON.stringify(userInfo._id)}
+                    currentUserId={userInfo._id.toString()}
                 />
             </div>
 
-            {thread.children && thread.children.length > 0 && (
+            {thread.children.length > 0 && (
                 <div className="w-full max-w-3xl mt-10">
                     <h2 className="text-xl font-semibold text-light-1 mb-4">Replies</h2>
-                    {thread.children.map((childThread: Thread) => (
+                    {thread.children.map((childThread) => (
                         <ThreadCard
                             key={childThread._id}
                             id={childThread._id}
@@ -69,7 +74,7 @@ export default async function ThreadPage({ params }: { params: { id: string } })
                             community={childThread.community}
                             createdAt={childThread.createdAt}
                             comments={childThread.children}
-                            isComment
+                            isComment={true}
                         />
                     ))}
                 </div>

@@ -18,6 +18,7 @@ interface FetchThreadsParams {
     limit: number;
 }
 
+
 interface FetchThreadByIdParams {
     threadId: string;
 }
@@ -34,6 +35,8 @@ interface FetchUserThreadsParams {
     page?: number;
     limit?: number;
 }
+
+
 
 
 

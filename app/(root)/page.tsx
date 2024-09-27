@@ -4,29 +4,37 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { fetchAllThreads } from "@/lib/actions/thread.actions";
 import ThreadCard from '@/components/cards/ThreadCard';
 
+interface Author {
+    _id: string;
+    name: string;
+    username: string;
+    image: string;
+}
+
+interface Community {
+    _id: string;
+    name: string;
+    image: string;
+}
+
 interface Thread {
     _id: string;
     parentId: string | null;
     text: string;
-    author: {
-        _id: string;
-        name: string;
-        username: string;
-        image: string;
-    };
-    community: {
-        id: string;
-        name: string;
-        image: string;
-    } | null;
+    author: Author;
+    community: Community | null;
     createdAt: string;
     children: Thread[];
 }
 
-
+interface FetchResponse {
+    threads: Thread[];
+    totalPages: number;
+    currentPage: number;
+}
 
 const InfiniteScrollComponent: React.FC = () => {
-    const [threads, setThreads] = useState<Thread[]>([])
+    const [threads, setThreads] = useState<Thread[]>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -37,13 +45,15 @@ const InfiniteScrollComponent: React.FC = () => {
 
         setLoading(true);
         try {
-            const { threads: newThreads, totalPages } = await fetchAllThreads({ page, limit: 10 });
+            const response: FetchResponse = await fetchAllThreads({ page, limit: 10 });
             setThreads(prevThreads => {
                 const existingIds = new Set(prevThreads.map(thread => thread._id));
-                const uniqueNewThreads = newThreads.filter(thread => !existingIds.has(thread._id));
+                const uniqueNewThreads = response.threads.filter(
+                    (thread: Thread) => !existingIds.has(thread._id)
+                );
                 return [...prevThreads, ...uniqueNewThreads];
             });
-            setTotalPages(totalPages);
+            setTotalPages(response.totalPages);
             setPage(prevPage => prevPage + 1);
         } catch (error) {
             console.error("Error loading threads:", error);
@@ -66,11 +76,16 @@ const InfiniteScrollComponent: React.FC = () => {
         }
 
         const currentObserver = observerRef.current;
-        if (currentObserver && document.getElementById('load-more-trigger')) {
-            currentObserver.observe(document.getElementById('load-more-trigger')!);
+        const triggerElement = document.getElementById('load-more-trigger');
+        if (currentObserver && triggerElement) {
+            currentObserver.observe(triggerElement);
         }
 
-        return () => currentObserver?.disconnect();
+        return () => {
+            if (currentObserver && triggerElement) {
+                currentObserver.unobserve(triggerElement);
+            }
+        };
     }, [loadMoreThreads]);
 
     return (
@@ -80,11 +95,14 @@ const InfiniteScrollComponent: React.FC = () => {
                 <ThreadCard
                     key={thread._id}
                     id={thread._id}
-                    currentUserId={""}
+                    currentUserId=""
                     parentId={thread.parentId}
                     content={thread.text}
                     author={thread.author}
+                    community={thread.community}
                     createdAt={thread.createdAt}
+                    comments={thread.children}
+                    isComment={false}
                 />
             ))}
             {loading && <p className="text-light-1">Loading...</p>}
@@ -93,10 +111,12 @@ const InfiniteScrollComponent: React.FC = () => {
     );
 };
 
-export default function Home() {
+const Home: React.FC = () => {
     return (
         <>
             <InfiniteScrollComponent />
         </>
     );
-}
+};
+
+export default Home;
