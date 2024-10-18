@@ -7,16 +7,6 @@ import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
 
 
-interface IUser {
-    id: string;
-    username: string;
-    name: string;
-    bio?: string;
-    image?: string;
-    onboarded: boolean;
-    path: string;
-}
-
 
 interface Params {
     text: string;
@@ -47,6 +37,15 @@ interface FetchUserThreadsParams {
     page?: number;
     limit?: number;
 }
+
+interface SearchThreadsParams {
+    searchQuery: string;
+    authorFilter: string;
+    sortOrder: 'latest' | 'oldest';
+    page?: number;
+    limit?: number;
+}
+
 
 
 function toPlainObject<T>(doc: T): T {
@@ -284,3 +283,77 @@ export async function fetchUserThreads({
         throw new Error('Failed to fetch user threads');
     }
 }
+
+
+export async function searchThreads({
+                                        searchQuery,
+                                        authorFilter,
+                                        sortOrder,
+                                        page = 1,
+                                        limit = 10
+                                    }: SearchThreadsParams) {
+    try {
+        await connectToDb();
+
+        const skip = (page - 1) * limit;
+
+        if (!searchQuery && !authorFilter) {
+            return { threads: [], totalPages: 0, currentPage: page };
+        }
+
+        const query: any = { parentId: { $in: [null, undefined] } };
+
+        if (searchQuery) {
+            query.text = new RegExp(searchQuery, 'i');
+        }
+
+        if (authorFilter) {
+            const matchingAuthors = await UserModel.find({
+                $or: [
+                    { name: new RegExp(authorFilter, 'i') },
+                    { username: new RegExp(authorFilter, 'i') }
+                ]
+            }).select('_id');
+
+            if (matchingAuthors.length > 0) {
+                query.author = { $in: matchingAuthors.map(author => author._id) };
+            } else {
+                return { threads: [], totalPages: 0, currentPage: page };
+            }
+        }
+
+        const [threads, totalThreads] = await Promise.all([
+            Thread.find(query)
+                .sort({ createdAt: sortOrder === 'latest' ? -1 : 1 })
+                .skip(skip)
+                .limit(limit)
+                .populate({
+                    path: 'author',
+                    model: UserModel,
+                    select: '_id name username image'
+                })
+                .populate({
+                    path: 'children',
+                    populate: {
+                        path: 'author',
+                        model: UserModel,
+                        select: '_id name username image'
+                    }
+                })
+                .lean(),
+            Thread.countDocuments(query)
+        ]);
+
+        const totalPages = Math.ceil(totalThreads / limit);
+
+        return {
+            threads,
+            totalPages,
+            currentPage: page,
+        };
+    } catch (error) {
+        console.error('Error searching threads:', error);
+        throw new Error('Failed to search threads');
+    }
+}
+

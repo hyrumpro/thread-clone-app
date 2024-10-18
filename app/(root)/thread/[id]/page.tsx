@@ -20,7 +20,7 @@ interface Thread {
     community: null | any;
     children: Thread[];
     createdAt: string;
-    parentId?: string | null;  // Changed to allow null
+    parentId?: string | null;  
     __v: number;
 }
 
@@ -33,7 +33,16 @@ export default async function ThreadPage({ params }: { params: { id: string } })
     const threadData = await fetchThreadById({ threadId: params.id });
     if (!threadData) redirect("/");
 
+
     const thread = threadData as unknown as Thread;
+    console.log(thread);
+
+
+    const transformedAuthor = {
+        _id: thread.author._id,
+        image: thread.author.image,
+        username: thread.author.name
+    };
 
     return (
         <div className="flex flex-col p-8 w-full">
@@ -43,7 +52,7 @@ export default async function ThreadPage({ params }: { params: { id: string } })
                 currentUserId={user.id}
                 parentId={thread.parentId || null}
                 content={thread.text}
-                author={thread.author}
+                author={transformedAuthor}
                 community={thread.community}
                 createdAt={thread.createdAt}
                 comments={thread.children}

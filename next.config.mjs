@@ -2,17 +2,15 @@
 const nextConfig = {
     images: {
         domains: [
-            "example.com", // Remove this if you don't need it
+            "example.com", // Remove this
             "uploadthing.com",
-            "utfs.io", // For uploadthing
-            "img.clerk.com", // For Clerk
-            "images.clerk.dev", // For Clerk
-            "lh3.googleusercontent.com", // For Google
-            "placehold.co", // If you're using placeholder images
+            "utfs.io",
+            "img.clerk.com",
+            "images.clerk.dev",
+            "lh3.googleusercontent.com",
         ],
     },
     reactStrictMode: true,
-    ignoreDuringBuilds: true,
 };
 
 export default nextConfig;

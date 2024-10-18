@@ -4,9 +4,11 @@ import Link from "next/link";
 import { sidebarLinks } from "@/constants";
 import Image from "next/image";
 import { usePathname } from 'next/navigation';
-import { SignOutButton, SignedIn } from "@clerk/nextjs";
+import { SignOutButton, SignedIn, useAuth } from "@clerk/nextjs";
+
 
 const LeftSidebar: React.FC = () => {
+    const { userId } = useAuth()
     const pathname = usePathname();
 
     return (

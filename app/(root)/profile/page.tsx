@@ -7,7 +7,7 @@ import Image from "next/image";
 import { profileTabs } from "@/constants";
 import ThreadsTabs from "@/components/shared/ThreadTab";
 
-export default async function ProfilePage({ params }: { params: { id: string } }) {
+export default async function ProfilePage() {
     const { userId } = auth();
     if (!userId) return redirect("/sign-in");
 
@@ -15,15 +15,16 @@ export default async function ProfilePage({ params }: { params: { id: string } }
     if (!user) return redirect("/sign-in");
 
     try {
-        const userInfo = await getUserByCustomId(params.id);
+        const userInfo = await getUserByCustomId(userId);
         if (!userInfo) {
             throw new Error("User not found");
         }
 
+
         return (
             <section className="relative bg-dark-1 w-full p-6">
                 <ProfileHeader
-                    accountID={params.id}
+                    accountID={userInfo._id}
                     authUserId={userId}
                     name={userInfo.name}
                     username={userInfo.username}
@@ -53,13 +54,15 @@ export default async function ProfilePage({ params }: { params: { id: string } }
                                 </TabsTrigger>
                             ))}
                         </TabsList>
+
                         <TabsContent value="threads">
                             <ThreadsTabs
                                 currentUserId={userId}
-                                accountId={params.id}
+                                accountId={userInfo._id.toString()}
                                 accountType="User"
                             />
                         </TabsContent>
+
                     </Tabs>
                 </div>
             </section>
