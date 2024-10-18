@@ -56,6 +56,9 @@ export default function ActivityComponent() {
         return `${Math.floor(diffInSeconds / 86400)} days ago`;
     }
 
+
+
+
     return (
         <div className="flex flex-col h-screen bg-dark-1 text-light-1 w-full">
             <ScrollArea className="flex-grow custom-scrollbar">
