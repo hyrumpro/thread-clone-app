@@ -16,8 +16,17 @@ export default async function ProfilePage({ params }: { params: { id: string } }
 
     try {
         const userInfo = await getUserByCustomId(params.id);
-        if (!userInfo) {
-            throw new Error("User not found");
+
+        if (!userInfo || Object.keys(userInfo).length === 0) {
+            return (
+                <div className="flex flex-col items-center justify-center min-h-screen bg-dark-1 text-light-1">
+                    <h1 className="text-4xl font-bold mb-4">User Not Found</h1>
+                    <p className="text-xl text-light-2">The profile you re looking for doesnt exist or has been removed.</p>
+                    <a href="/" className="mt-8 px-6 py-3 bg-primary-500 text-white rounded-full hover:bg-primary-600 transition-colors">
+                        Return to Home
+                    </a>
+                </div>
+            );
         }
 
         return (
@@ -47,7 +56,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
 
                                     {tab.label === "Threads" && (
                                         <p className="ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2">
-                                            {userInfo?.threads?.length}
+                                            {userInfo?.threads?.length || 0}
                                         </p>
                                     )}
                                 </TabsTrigger>
@@ -67,8 +76,12 @@ export default async function ProfilePage({ params }: { params: { id: string } }
     } catch (error) {
         console.error("Error loading profile:", error);
         return (
-            <div className="flex justify-center items-center h-full text-light-1">
-                Error loading profile. Please try again later.
+            <div className="flex flex-col items-center justify-center min-h-screen bg-dark-1 text-light-1">
+                <h1 className="text-4xl font-bold mb-4">Oops! Something went wrong</h1>
+                <p className="text-xl text-light-2">We are having trouble loading this profile. Please try again later.</p>
+                <a href="/" className="mt-8 px-6 py-3 bg-primary-500 text-white rounded-full hover:bg-primary-600 transition-colors">
+                    Return to Home
+                </a>
             </div>
         );
     }
