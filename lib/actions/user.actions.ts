@@ -175,6 +175,7 @@ export async function fetchUserActivities(userId: string, limit: number = 10): P
             replierName: reply.author.name,
             replierUsername: reply.author.username,
             replierImage: reply.author.image,
+            replierId: reply.author._id,
             replyContent: reply.text,
             createdAt: reply.createdAt
         }));
