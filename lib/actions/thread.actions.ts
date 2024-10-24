@@ -3,6 +3,7 @@
 import { connectToDb } from "@/lib/mongoose";
 import Thread from "@/lib/models/thread.model";
 import UserModel from "@/lib/models/user.model";
+import Community from "@/lib/models/user.model";
 import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
 
@@ -55,25 +56,49 @@ function toPlainObject<T>(doc: T): T {
 
 
 export async function createThread({ text, author, communityId, path }: Params) {
-
     try {
         await connectToDb();
+
+        let communityObjectId = null;
+
+        // If communityId exists, find the community's ObjectId
+        if (communityId) {
+            const community = await Community.findOne({ id: communityId });
+            if (community) {
+                communityObjectId = community._id;
+            }
+        }
+
 
         const createdThread = await Thread.create({
             text,
             author,
-            community: communityId
+            community: communityObjectId
         });
+
 
         await UserModel.findByIdAndUpdate(author, {
             $push: { threads: createdThread._id }
         });
 
+
+        if (communityObjectId) {
+            await Community.findByIdAndUpdate(communityObjectId, {
+                $push: { threads: createdThread._id }
+            });
+        }
+
         revalidatePath(path);
+
+        return createdThread;
 
     } catch (error) {
         console.error('Error creating thread:', error);
-        throw new Error('Failed to create thread');
+        if (error instanceof Error) {
+            throw new Error(`Failed to create thread: ${error.message}`);
+        } else {
+            throw new Error('Failed to create thread');
+        }
     }
 }
 
