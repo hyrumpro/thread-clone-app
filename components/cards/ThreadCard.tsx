@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from "next/link";
 import Image from "next/image";
+import { formatDistanceToNow } from 'date-fns';
 
 interface Props {
     id: string;
@@ -37,6 +38,8 @@ const ThreadCard = ({
                         comments,
                         isComment
                     }: Props) => {
+    const formattedDate = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
+
     return (
         <article className={`p-7 rounded-xl ${isComment ? "px-0 xs:px-7" : "bg-dark-2 p7"} mb-4 w-full max-w-3xl mx-auto flex-col`}>
             <div className="flex items-start justify-between">
@@ -52,25 +55,101 @@ const ThreadCard = ({
                         </Link>
                         <div className="thread-card_bar"/>
                     </div>
-                    <div className="flex-w-full flex-col">
-                        <Link href={`/profile/${author._id}`} className="w-fit">
-                            <h4 className="cursor-pointer text-base-semibold text-light-1">{author.username}</h4>
-                        </Link>
+                    <div className="flex w-full flex-col">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
+                            <div className="flex flex-col">
+                                <Link href={`/profile/${author._id}`} className="w-fit">
+                                    <h4 className="cursor-pointer text-base-semibold text-light-1">{author.username}</h4>
+                                </Link>
+                                <span className="text-subtle-medium text-gray-1">
+                                    {formattedDate}
+                                </span>
+                            </div>
+
+                            {community && (
+                                <Link
+                                    href={`/communities/${community._id}`}
+                                    className="flex items-center gap-2 mt-2 sm:mt-0 px-3 py-1.5 rounded-full bg-dark-3 hover:bg-dark-4 transition-colors"
+                                >
+                                    <Image
+                                        src={community.image}
+                                        alt={community.name}
+                                        width={14}
+                                        height={14}
+                                        className="rounded-full"
+                                    />
+                                    <span className="text-subtle-medium text-gray-1 max-w-[100px] truncate">
+                                        {community.name}
+                                    </span>
+                                </Link>
+                            )}
+                        </div>
 
                         <p className="mt-2 text-light-2 text-small-regular">{content}</p>
 
                         <div className="mt-5 flex flex-col gap-3">
-                           <div className="flex gap-3.5">
-                             <Image src="/assets/heart-gray.svg" alt="heart" width={24} height={24} className="cursor-pointer object-contain" />
-                             <Link href={`/thread/${id}`}>
-                              <Image src="/assets/reply.svg" alt="reply" width={24} height={24} className="cursor-pointer object-contain" />
-                             </Link>
-                             <Image src="/assets/repost.svg" alt="repost" width={24} height={24} className="cursor-pointer object-contain" />
-                             <Image src="/assets/share.svg" alt="share" width={24} height={24} className="cursor-pointer object-contain" />
-                           </div>
-                            {isComment && comments.length > 0 && (
-                                <Link href={`/thread/${id}`}>
-                                   <p className="mt-1 text-subtle-medium text-gray-1">{comments.length}</p>
+                            <div className="flex gap-3.5">
+                                <button className="hover:bg-dark-4 p-2 rounded-full transition-colors">
+                                    <Image
+                                        src="/assets/heart-gray.svg"
+                                        alt="heart"
+                                        width={24}
+                                        height={24}
+                                        className="cursor-pointer object-contain"
+                                    />
+                                </button>
+                                <Link
+                                    href={`/thread/${id}`}
+                                    className="hover:bg-dark-4 p-2 rounded-full transition-colors"
+                                >
+                                    <Image
+                                        src="/assets/reply.svg"
+                                        alt="reply"
+                                        width={24}
+                                        height={24}
+                                        className="cursor-pointer object-contain"
+                                    />
+                                </Link>
+                                <button className="hover:bg-dark-4 p-2 rounded-full transition-colors">
+                                    <Image
+                                        src="/assets/repost.svg"
+                                        alt="repost"
+                                        width={24}
+                                        height={24}
+                                        className="cursor-pointer object-contain"
+                                    />
+                                </button>
+                                <button className="hover:bg-dark-4 p-2 rounded-full transition-colors">
+                                    <Image
+                                        src="/assets/share.svg"
+                                        alt="share"
+                                        width={24}
+                                        height={24}
+                                        className="cursor-pointer object-contain"
+                                    />
+                                </button>
+                            </div>
+
+                            {comments.length > 0 && (
+                                <Link
+                                    href={`/thread/${id}`}
+                                    className="flex items-center gap-2 text-gray-1"
+                                >
+                                    <div className="flex -space-x-2">
+                                        {comments.slice(0, 2).map((comment, index) => (
+                                            <Image
+                                                key={index}
+                                                src={comment.author.image}
+                                                alt={`user_${index}`}
+                                                width={16}
+                                                height={16}
+                                                className="rounded-full border-2 border-dark-1"
+                                            />
+                                        ))}
+                                    </div>
+                                    <p className="text-subtle-medium text-gray-1">
+                                        {comments.length} repl{comments.length === 1 ? 'y' : 'ies'}
+                                    </p>
                                 </Link>
                             )}
                         </div>
