@@ -3,27 +3,21 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatDistanceToNow } from 'date-fns';
 
-interface Author {
-    _id: string;
-    name: string;
-    username: string;
-    image: string;
-}
-
-interface Community {
-    _id: string;
-    id: string;
-    name: string;
-    image: string;
-}
-
 interface Props {
     id: string;
     currentUserId: string;
     parentId: string | null;
     content: string;
-    author: Author;
-    community: Community | null;
+    author: {
+        username: string;
+        image: string;
+        _id: string;
+    };
+    community: {
+        _id: string;
+        name: string;
+        image: string;
+    } | null;
     createdAt: string;
     comments: {
         author: {
@@ -54,7 +48,7 @@ const ThreadCard = ({
                         <Link href={`/profile/${author._id}`} className="relative h-11 w-11">
                             <Image
                                 src={author.image}
-                                alt={author.name}
+                                alt="Profile Image"
                                 fill
                                 className="cursor-pointer rounded-full"
                             />
@@ -64,24 +58,17 @@ const ThreadCard = ({
                     <div className="flex w-full flex-col">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
                             <div className="flex flex-col">
-                                <div className="flex items-center gap-2">
-                                    <Link href={`/profile/${author._id}`} className="w-fit">
-                                        <h4 className="cursor-pointer text-base-semibold text-light-1">
-                                            {author.name}
-                                        </h4>
-                                    </Link>
-                                    <p className="text-subtle-medium text-gray-1">
-                                        @{author.username}
-                                    </p>
-                                    <span className="text-subtle-medium text-gray-1">
-                                        • {formattedDate}
-                                    </span>
-                                </div>
+                                <Link href={`/profile/${author._id}`} className="w-fit">
+                                    <h4 className="cursor-pointer text-base-semibold text-light-1">{author.username}</h4>
+                                </Link>
+                                <span className="text-subtle-medium text-gray-1">
+                                    {formattedDate}
+                                </span>
                             </div>
 
                             {community && (
                                 <Link
-                                    href={`/communities/${community.id}`}
+                                    href={`/communities/${community._id}`}
                                     className="flex items-center gap-2 mt-2 sm:mt-0 px-3 py-1.5 rounded-full bg-dark-3 hover:bg-dark-4 transition-colors"
                                 >
                                     <Image
@@ -102,10 +89,7 @@ const ThreadCard = ({
 
                         <div className="mt-5 flex flex-col gap-3">
                             <div className="flex gap-3.5">
-                                <button
-                                    className="hover:bg-dark-4 p-2 rounded-full transition-colors"
-                                    aria-label="Like thread"
-                                >
+                                <button className="hover:bg-dark-4 p-2 rounded-full transition-colors">
                                     <Image
                                         src="/assets/heart-gray.svg"
                                         alt="heart"
@@ -126,10 +110,7 @@ const ThreadCard = ({
                                         className="cursor-pointer object-contain"
                                     />
                                 </Link>
-                                <button
-                                    className="hover:bg-dark-4 p-2 rounded-full transition-colors"
-                                    aria-label="Repost thread"
-                                >
+                                <button className="hover:bg-dark-4 p-2 rounded-full transition-colors">
                                     <Image
                                         src="/assets/repost.svg"
                                         alt="repost"
@@ -138,10 +119,7 @@ const ThreadCard = ({
                                         className="cursor-pointer object-contain"
                                     />
                                 </button>
-                                <button
-                                    className="hover:bg-dark-4 p-2 rounded-full transition-colors"
-                                    aria-label="Share thread"
-                                >
+                                <button className="hover:bg-dark-4 p-2 rounded-full transition-colors">
                                     <Image
                                         src="/assets/share.svg"
                                         alt="share"
@@ -162,7 +140,7 @@ const ThreadCard = ({
                                             <Image
                                                 key={index}
                                                 src={comment.author.image}
-                                                alt="commenter"
+                                                alt={`user_${index}`}
                                                 width={16}
                                                 height={16}
                                                 className="rounded-full border-2 border-dark-1"
