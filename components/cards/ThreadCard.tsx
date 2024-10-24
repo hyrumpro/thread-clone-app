@@ -10,11 +10,12 @@ interface Props {
     content: string;
     author: {
         username: string;
+        name: string;
         image: string;
         _id: string;
     };
     community: {
-        _id: string;
+        id: string;
         name: string;
         image: string;
     } | null;
@@ -48,7 +49,7 @@ const ThreadCard = ({
                         <Link href={`/profile/${author._id}`} className="relative h-11 w-11">
                             <Image
                                 src={author.image}
-                                alt="Profile Image"
+                                alt={author.username}
                                 fill
                                 className="cursor-pointer rounded-full"
                             />
@@ -56,76 +57,82 @@ const ThreadCard = ({
                         <div className="thread-card_bar"/>
                     </div>
                     <div className="flex w-full flex-col">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
-                            <div className="flex flex-col">
+                        <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
                                 <Link href={`/profile/${author._id}`} className="w-fit">
-                                    <h4 className="cursor-pointer text-base-semibold text-light-1">{author.username}</h4>
+                                    <h4 className="cursor-pointer text-base-semibold text-light-1">
+                                        {author.username}
+                                    </h4>
                                 </Link>
-                                <span className="text-subtle-medium text-gray-1">
-                                    {formattedDate}
-                                </span>
+
+                                {community && (
+                                    <>
+                                        <span className="text-subtle-medium text-gray-1">in</span>
+                                        <Link
+                                            href={`/communities/${community.id}`}
+                                            className="flex items-center gap-1.5 text-primary-500"
+                                        >
+                                            <Image
+                                                src={community.image}
+                                                alt={community.name}
+                                                width={14}
+                                                height={14}
+                                                className="rounded-full"
+                                            />
+                                            <span className="text-subtle-medium text-primary-500 max-w-[100px] truncate">
+                                                {community.name}
+                                            </span>
+                                        </Link>
+                                    </>
+                                )}
                             </div>
 
-                            {community && (
-                                <Link
-                                    href={`/communities/${community._id}`}
-                                    className="flex items-center gap-2 mt-2 sm:mt-0 px-3 py-1.5 rounded-full bg-dark-3 hover:bg-dark-4 transition-colors"
-                                >
-                                    <Image
-                                        src={community.image}
-                                        alt={community.name}
-                                        width={14}
-                                        height={14}
-                                        className="rounded-full"
-                                    />
-                                    <span className="text-subtle-medium text-gray-1 max-w-[100px] truncate">
-                                        {community.name}
-                                    </span>
-                                </Link>
-                            )}
+                            <span className="text-subtle-medium text-gray-1">
+                                {formattedDate}
+                            </span>
                         </div>
 
                         <p className="mt-2 text-light-2 text-small-regular">{content}</p>
 
                         <div className="mt-5 flex flex-col gap-3">
                             <div className="flex gap-3.5">
-                                <button className="hover:bg-dark-4 p-2 rounded-full transition-colors">
+                                <button className="hover:bg-dark-4 p-2 rounded-full transition-colors group">
                                     <Image
                                         src="/assets/heart-gray.svg"
                                         alt="heart"
                                         width={24}
                                         height={24}
-                                        className="cursor-pointer object-contain"
+                                        className="cursor-pointer object-contain group-hover:scale-110 transition-transform"
                                     />
                                 </button>
                                 <Link
                                     href={`/thread/${id}`}
-                                    className="hover:bg-dark-4 p-2 rounded-full transition-colors"
+                                    className="hover:bg-dark-4 p-2 rounded-full transition-colors group"
                                 >
                                     <Image
                                         src="/assets/reply.svg"
                                         alt="reply"
                                         width={24}
                                         height={24}
-                                        className="cursor-pointer object-contain"
+                                        className="cursor-pointer object-contain group-hover:scale-110 transition-transform"
                                     />
                                 </Link>
-                                <button className="hover:bg-dark-4 p-2 rounded-full transition-colors">
+                                <button className="hover:bg-dark-4 p-2 rounded-full transition-colors group">
                                     <Image
                                         src="/assets/repost.svg"
                                         alt="repost"
                                         width={24}
                                         height={24}
-                                        className="cursor-pointer object-contain"
+                                        className="cursor-pointer object-contain group-hover:scale-110 transition-transform"
                                     />
                                 </button>
-                                <button className="hover:bg-dark-4 p-2 rounded-full transition-colors">
+                                <button className="hover:bg-dark-4 p-2 rounded-full transition-colors group">
                                     <Image
                                         src="/assets/share.svg"
                                         alt="share"
                                         width={24}
                                         height={24}
-                                        className="cursor-pointer object-contain"
+                                        className="cursor-pointer object-contain group-hover:scale-110 transition-transform"
                                     />
                                 </button>
                             </div>
@@ -133,7 +140,7 @@ const ThreadCard = ({
                             {comments.length > 0 && (
                                 <Link
                                     href={`/thread/${id}`}
-                                    className="flex items-center gap-2 text-gray-1"
+                                    className="flex items-center gap-2 text-gray-1 hover:text-gray-400 transition-colors"
                                 >
                                     <div className="flex -space-x-2">
                                         {comments.slice(0, 2).map((comment, index) => (
@@ -147,7 +154,7 @@ const ThreadCard = ({
                                             />
                                         ))}
                                     </div>
-                                    <p className="text-subtle-medium text-gray-1">
+                                    <p className="text-subtle-medium">
                                         {comments.length} repl{comments.length === 1 ? 'y' : 'ies'}
                                     </p>
                                 </Link>
