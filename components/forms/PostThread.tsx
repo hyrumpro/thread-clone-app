@@ -36,6 +36,7 @@ function PostThread({ userId }: { userId: string }) {
     const onSubmit = async (values: z.infer<typeof ThreadSchema>) => {
         setIsSubmitting(true);
         setError(null);
+        console.log(organization);
 
         try {
             const communityId = organization ? organization.id : null;
