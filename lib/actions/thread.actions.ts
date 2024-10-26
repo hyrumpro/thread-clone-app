@@ -3,23 +3,25 @@
 import { connectToDb } from "@/lib/mongoose";
 import Thread from "@/lib/models/thread.model";
 import UserModel from "@/lib/models/user.model";
-import Community from "@/lib/models/user.model";
+import Community from "@/lib/models/community.model";
 import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
 
 
 
-interface Params {
+
+interface FetchThreadsParams {
+    page: number;
+    limit: number;
+}
+
+interface CreateThreadParams {
     text: string;
     author: string;
     communityId: string | null;
     path: string;
 }
 
-interface FetchThreadsParams {
-    page: number;
-    limit: number;
-}
 
 
 interface FetchThreadByIdParams {
@@ -55,26 +57,35 @@ function toPlainObject<T>(doc: T): T {
 
 
 
-export async function createThread({ text, author, communityId, path }: Params) {
+export async function createThread({
+                                       text,
+                                       author,
+                                       communityId,
+                                       path
+                                   }: CreateThreadParams) {
     try {
         await connectToDb();
 
-        let communityObjectId = null;
 
-        // If communityId exists, find the community's ObjectId
+        const threadData: any = {
+            text,
+            author,
+            parentId: null
+        };
+
+
+
         if (communityId) {
-            const community = await Community.findOne({ id: communityId });
-            if (community) {
-                communityObjectId = community._id;
+            const communityExists = await Community.findOne({ externalId: communityId });
+
+            if (!communityExists) {
+                throw new Error(`Community not found with ID: ${communityId}`);
             }
+            threadData.community = communityExists._id;
         }
 
 
-        const createdThread = await Thread.create({
-            text,
-            author,
-            community: communityObjectId
-        });
+        const createdThread = await Thread.create(threadData);
 
 
         await UserModel.findByIdAndUpdate(author, {
@@ -82,23 +93,30 @@ export async function createThread({ text, author, communityId, path }: Params) 
         });
 
 
-        if (communityObjectId) {
-            await Community.findByIdAndUpdate(communityObjectId, {
+        if (threadData.community) {
+            await Community.findByIdAndUpdate(threadData.community, {
                 $push: { threads: createdThread._id }
             });
         }
 
+
+        const populatedThread = await Thread.findById(createdThread._id)
+            .populate({
+                path: 'author',
+                model: UserModel,
+                select: '_id name username image'
+            })
+            .populate({
+                path: 'community',
+                model: Community,
+                select: '_id id name image'
+            });
+
         revalidatePath(path);
-
-        return createdThread;
-
+        return JSON.parse(JSON.stringify(populatedThread));
     } catch (error) {
         console.error('Error creating thread:', error);
-        if (error instanceof Error) {
-            throw new Error(`Failed to create thread: ${error.message}`);
-        } else {
-            throw new Error('Failed to create thread');
-        }
+        throw error;
     }
 }
 

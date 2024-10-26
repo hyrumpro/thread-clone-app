@@ -9,7 +9,7 @@ import UserModel from "../models/user.model";
 import { connectToDb } from "../mongoose";
 
 export async function createCommunity(
-    id: string,
+    externalId: string,
     name: string,
     username: string,
     image: string,
@@ -27,7 +27,7 @@ export async function createCommunity(
         }
 
         const newCommunity = new Community({
-            id,
+            externalId,
             name,
             username,
             image,
@@ -49,11 +49,11 @@ export async function createCommunity(
     }
 }
 
-export async function fetchCommunityDetails(id: string) {
+export async function fetchCommunityDetails(externalId: string) {
     try {
         await connectToDb();
 
-        const communityDetails = await Community.findOne({ id }).populate([
+        const communityDetails = await Community.findOne({ externalId }).populate([
             "createdBy",
             {
                 path: "members",
@@ -70,11 +70,11 @@ export async function fetchCommunityDetails(id: string) {
     }
 }
 
-export async function fetchCommunityPosts(id: string) {
+export async function fetchCommunityPosts(externalId: string) {
     try {
         await connectToDb();
 
-        const communityPosts = await Community.findById(id).populate({
+        const communityPosts = await Community.findById(externalId).populate({
             path: "threads",
             model: Thread,
             populate: [
@@ -167,7 +167,7 @@ export async function addMemberToCommunity(
         await connectToDb();
 
 
-        const community = await Community.findOne({ id: communityId });
+        const community = await Community.findOne({ externalId: communityId });
 
         if (!community) {
             throw new Error("Community not found");
@@ -210,8 +210,7 @@ export async function removeUserFromCommunity(
 
         const userIdObject = await UserModel.findOne({ id: userId }, { _id: 1 });
         const communityIdObject = await Community.findOne(
-            { id: communityId },
-            { _id: 1 }
+            { externalId: communityId }
         );
 
         if (!userIdObject) {
@@ -252,7 +251,7 @@ export async function updateCommunityInfo(
         await connectToDb();
 
         const updatedCommunity = await Community.findOneAndUpdate(
-            { id: communityId },
+            { externalId: communityId },
             { name, username, image }
         );
 
@@ -274,7 +273,7 @@ export async function deleteCommunity(communityId: string) {
 
         // Find the community by its ID and delete it
         const deletedCommunity = await Community.findOneAndDelete({
-            id: communityId,
+            externalId: communityId,
         });
 
         if (!deletedCommunity) {

@@ -2,7 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 
 
 const CommunitySchema: Schema = new Schema({
-    id: {
+    externalId: {
         type: String,
         required: true,
     },

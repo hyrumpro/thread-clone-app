@@ -41,6 +41,7 @@ function PostThread({ userId }: { userId: string }) {
         try {
             const communityId = organization ? organization.id : null;
 
+
             await createThread({
                 text: values.content,
                 author: values.accountId,
