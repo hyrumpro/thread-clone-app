@@ -28,7 +28,7 @@ async function CommunityDetails({ params }: { params: { id: string } }) {
         "use server";
 
         if (isMember) {
-            await removeUserFromCommunity(user.id, communityDetails._id);
+            await removeUserFromCommunity(user.id, communityDetails.id);
         } else {
             await addMemberToCommunity(communityDetails._id, user.id);
         }

@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Search, Users } from 'lucide-react'
 import { fetchCommunities } from '@/lib/actions/community.actions'
+import { useRouter } from "next/navigation";
 
 interface Community {
     id: string;
@@ -29,6 +30,10 @@ export default function CommunitiesPage() {
     const [loading, setLoading] = useState(false)
     const [page, setPage] = useState(1)
     const [hasMore, setHasMore] = useState(true)
+    const router = useRouter();
+    const handleJoinCommunity = (communityId: string) => {
+        router.push(`/community/${communityId}`)
+    }
 
     const fetchCommunityData = async (reset: boolean = false) => {
         try {
@@ -130,9 +135,6 @@ export default function CommunitiesPage() {
                                                 <CardTitle className="text-light-1 text-xl mb-1">
                                                     {community.name}
                                                 </CardTitle>
-                                                <CardDescription className="text-light-3 text-sm mb-2">
-                                                    @{community.username}
-                                                </CardDescription>
                                                 <div className="flex items-center text-light-2 mb-3">
                                                     <Users className="w-4 h-4 mr-2" />
                                                     <span className="text-sm">
@@ -146,6 +148,7 @@ export default function CommunitiesPage() {
                                         </CardHeader>
                                         <CardFooter className="p-6 pt-0">
                                             <Button
+                                                onClick={() => handleJoinCommunity(community.id)}
                                                 className="w-full bg-primary-500 hover:bg-primary-500/90 text-light-1"
                                             >
                                                 Join Community
