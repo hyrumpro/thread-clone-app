@@ -1,3 +1,4 @@
+"use client";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { fetchCommunityDetails } from "@/lib/actions/community.actions";
@@ -8,10 +9,13 @@ import { communityTabs } from "@/constants";
 import ThreadsTab from "@/components/shared/ThreadTab";
 import { fetchCommunityPosts } from "@/lib/actions/community.actions";
 import { Button } from "@/components/ui/button";
-import { addMemberToCommunity, removeUserFromCommunity } from "@/lib/actions/community.actions";
+import { useClerk } from "@clerk/clerk-react";
+import { useState } from "react";
+import { OrganizationProfile } from '@clerk/nextjs'
 
 async function CommunityDetails({ params }: { params: { id: string } }) {
     const user = await currentUser();
+    const [isJoining, setIsJoining] = useState(false);
     if (!user) return redirect("/sign-in");
 
     const communityDetails = await fetchCommunityDetails(params.id);
@@ -24,13 +28,18 @@ async function CommunityDetails({ params }: { params: { id: string } }) {
         (member: any) => member.id === user.id
     );
 
-    const handleMembership = async () => {
-        "use server";
-
-        if (isMember) {
-            await removeUserFromCommunity(user.id, communityDetails.id);
-        } else {
-            await addMemberToCommunity(communityDetails._id, user.id);
+    const handleMembershipModal = async () => {
+        setIsJoining(true);
+        try {
+            if (isMember) {
+                return <OrganizationProfile />
+            } else {
+                return <OrganizationProfile />
+            }
+        } catch (error) {
+            console.error("Error handling membership:", error);
+        } finally {
+            setIsJoining(false);
         }
     };
 
@@ -72,7 +81,7 @@ async function CommunityDetails({ params }: { params: { id: string } }) {
                                     <p className="text-light-3">@{communityDetails.username}</p>
                                 </div>
 
-                                <form action={handleMembership}>
+                                <form action={handleMembershipModal}>
                                     <Button
                                         className={`px-8 ${
                                             isMember

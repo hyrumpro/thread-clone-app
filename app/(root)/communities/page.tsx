@@ -11,7 +11,7 @@ import { fetchCommunities } from '@/lib/actions/community.actions'
 import { useRouter } from "next/navigation";
 
 interface Community {
-    id: string;
+    externalId: string;
     name: string;
     username: string;
     image: string;
@@ -32,6 +32,7 @@ export default function CommunitiesPage() {
     const [hasMore, setHasMore] = useState(true)
     const router = useRouter();
     const handleJoinCommunity = (communityId: string) => {
+        console.log(communityId)
         router.push(`/community/${communityId}`)
     }
 
@@ -48,6 +49,7 @@ export default function CommunitiesPage() {
 
             setCommunities(prev => reset ? result.communities : [...prev, ...result.communities])
             setHasMore(result.isNext)
+            console.log(communities);
             if (!reset) setPage(prev => prev + 1)
         } catch (error) {
             console.error('Error fetching communities:', error)
@@ -121,7 +123,7 @@ export default function CommunitiesPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {communities.map((community) => (
                                     <Card
-                                        key={community.id}
+                                        key={community.externalId}
                                         className="bg-dark-3 border-dark-4 hover:bg-dark-4 transition-colors duration-200"
                                     >
                                         <CardHeader className="flex flex-row items-start gap-4 p-6">
@@ -148,7 +150,7 @@ export default function CommunitiesPage() {
                                         </CardHeader>
                                         <CardFooter className="p-6 pt-0">
                                             <Button
-                                                onClick={() => handleJoinCommunity(community.id)}
+                                                onClick={() => handleJoinCommunity(community.externalId)}
                                                 className="w-full bg-primary-500 hover:bg-primary-500/90 text-light-1"
                                             >
                                                 Join Community
