@@ -49,7 +49,6 @@ export default function CommunitiesPage() {
 
             setCommunities(prev => reset ? result.communities : [...prev, ...result.communities])
             setHasMore(result.isNext)
-            console.log(communities);
             if (!reset) setPage(prev => prev + 1)
         } catch (error) {
             console.error('Error fetching communities:', error)
