@@ -24,7 +24,7 @@ async function CommunityDetails({ params }: { params: { id: string } }) {
     );
 
     const handleMembershipModal = async () => {
-
+          "use server";
         try {
             if (isMember) {
                 return <OrganizationProfile />
