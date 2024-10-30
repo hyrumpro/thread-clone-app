@@ -33,7 +33,7 @@ export default function CommunitiesPage() {
     const router = useRouter();
     const handleJoinCommunity = (communityId: string) => {
         console.log(communityId)
-        router.push(`/community/${communityId}`)
+        router.push(`/communities/${communityId}`)
     }
 
     const fetchCommunityData = async (reset: boolean = false) => {
