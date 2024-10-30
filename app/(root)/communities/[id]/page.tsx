@@ -1,4 +1,3 @@
-"use client";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { fetchCommunityDetails } from "@/lib/actions/community.actions";
@@ -8,13 +7,10 @@ import { communityTabs } from "@/constants";
 import ThreadsTab from "@/components/shared/ThreadTab";
 import { fetchCommunityPosts } from "@/lib/actions/community.actions";
 import { Button } from "@/components/ui/button";
-
-import { useState } from "react";
 import { OrganizationProfile } from '@clerk/nextjs'
 
 async function CommunityDetails({ params }: { params: { id: string } }) {
     const user = await currentUser();
-    const [isJoining, setIsJoining] = useState(false);
     if (!user) return redirect("/sign-in");
 
     const communityDetails = await fetchCommunityDetails(params.id);
@@ -28,7 +24,7 @@ async function CommunityDetails({ params }: { params: { id: string } }) {
     );
 
     const handleMembershipModal = async () => {
-        setIsJoining(true);
+
         try {
             if (isMember) {
                 return <OrganizationProfile />
@@ -37,8 +33,6 @@ async function CommunityDetails({ params }: { params: { id: string } }) {
             }
         } catch (error) {
             console.error("Error handling membership:", error);
-        } finally {
-            setIsJoining(false);
         }
     };
 
