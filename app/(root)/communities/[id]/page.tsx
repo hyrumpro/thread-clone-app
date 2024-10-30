@@ -21,7 +21,7 @@ async function CommunityDetails({ params }: { params: { id: string } }) {
     const communityDetails = await fetchCommunityDetails(params.id);
     if (!communityDetails) return redirect("/communities");
 
-    const communityPosts = await fetchCommunityPosts(communityDetails._id);
+    const communityPosts = await fetchCommunityPosts(params.id);
 
     // Check if user is a member
     const isMember = communityDetails.members.some(
