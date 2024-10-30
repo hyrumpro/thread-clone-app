@@ -2,14 +2,13 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { fetchCommunityDetails } from "@/lib/actions/community.actions";
-import ProfileHeader from "@/components/shared/ProfileHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from "next/image";
 import { communityTabs } from "@/constants";
 import ThreadsTab from "@/components/shared/ThreadTab";
 import { fetchCommunityPosts } from "@/lib/actions/community.actions";
 import { Button } from "@/components/ui/button";
-import { useClerk } from "@clerk/clerk-react";
+
 import { useState } from "react";
 import { OrganizationProfile } from '@clerk/nextjs'
 
